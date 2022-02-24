@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { CssBaseline, Grid } from '@material-ui/core';
 
 import { getPlacesData } from './api';
@@ -13,7 +13,7 @@ export default function App() {
   const [bounds, setBounds] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [type, setType] = useState('restaurants');
-  const [rating, setRating] = useState('');
+  const [rating, setRating] = useState(0);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -28,12 +28,19 @@ export default function App() {
       const data = await getPlacesData(type, bounds.sw, bounds.ne);
 
       setPlaces(data);
+      setRating(0)
       setIsLoading(false);
     }
 
     setIsLoading(true);
     getAndSetPlacesOnLocalState();
   }, [coordinates, bounds, type]);
+
+  let filteredPlaces = [...places];
+  useMemo(() => {
+    filteredPlaces = places.filter((place) => place.rating > rating);
+  }, [rating])
+
   return (
     <>
       <CssBaseline />
@@ -41,7 +48,7 @@ export default function App() {
       <Grid container spacing={3} style={{ width: '100%' }}>
         <Grid item xs={12} md={4}>
           <List
-            places={places}
+            places={filteredPlaces}
             childClicked={childClicked}
             isLoading={isLoading}
             type={type}
@@ -55,7 +62,7 @@ export default function App() {
             setCoordinates={setCoordinates}
             setBounds={setBounds}
             coordinates={coordinates}
-            places={places}
+            places={filteredPlaces}
             setChildClicked={setChildClicked}
           />
         </Grid>
