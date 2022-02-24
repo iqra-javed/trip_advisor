@@ -5,6 +5,7 @@ import LocationOnOutlinedIcon from '@material-ui/icons/LocationOnOutlined';
 import Rating from '@material-ui/lab/Rating';
 
 import useStyles from './styles';
+import mapStyles from './mapStyles';
 import { PLACEHOLDER_IMAGE_URL } from '../PlaceDetails/PlaceDetails';
 
 export default function Map({
@@ -25,7 +26,7 @@ export default function Map({
         center={coordinates}
         defaultZoom={14}
         margin={[50, 50, 50, 50]}
-        options={''}
+        options={{disableDefaultUI: true, zoomControl: true, styles: mapStyles}}
         onChange={(e) => {
           setCoordinates({ lat: e.center.lat, lng: e.center.lng });
           setBounds({ ne: e.marginBounds.ne, sw: e.marginBounds.sw });

@@ -8,6 +8,7 @@ import Map from './components/Map/Map';
 
 export default function App() {
   const [places, setPlaces] = useState([]);
+  const [filteredPlaces, setFilteredPlaces] = useState([]);
   const [childClicked, setChildClicked] = useState(null);
   const [coordinates, setCoordinates] = useState({});
   const [bounds, setBounds] = useState({});
@@ -24,31 +25,35 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const filteredPlaces = places?.filter(
+      (place) => parseFloat(place.rating) > rating
+    );
+    setFilteredPlaces(filteredPlaces);
+  }, [rating]);
+
+  useEffect(() => {
     async function getAndSetPlacesOnLocalState() {
       const data = await getPlacesData(type, bounds.sw, bounds.ne);
-
-      setPlaces(data);
-      setRating(0)
+      setPlaces(data?.filter((place) => place.name && place.num_reviews > 0));
+      setFilteredPlaces([]);
+      setRating(0);
       setIsLoading(false);
     }
 
-    setIsLoading(true);
-    getAndSetPlacesOnLocalState();
-  }, [coordinates, bounds, type]);
-
-  let filteredPlaces = [...places];
-  useMemo(() => {
-    filteredPlaces = places.filter((place) => place.rating > rating);
-  }, [rating])
+    if (bounds.sw && bounds.ne) {
+      setIsLoading(true);
+      getAndSetPlacesOnLocalState();
+    }
+  }, [bounds, type]);
 
   return (
     <>
       <CssBaseline />
-      <Header />
+      <Header setCoordinates={setCoordinates} />
       <Grid container spacing={3} style={{ width: '100%' }}>
         <Grid item xs={12} md={4}>
           <List
-            places={filteredPlaces}
+            places={filteredPlaces.length ? filteredPlaces : places}
             childClicked={childClicked}
             isLoading={isLoading}
             type={type}
@@ -62,7 +67,7 @@ export default function App() {
             setCoordinates={setCoordinates}
             setBounds={setBounds}
             coordinates={coordinates}
-            places={filteredPlaces}
+            places={filteredPlaces.length ? filteredPlaces : places}
             setChildClicked={setChildClicked}
           />
         </Grid>
